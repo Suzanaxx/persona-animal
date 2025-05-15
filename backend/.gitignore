@@ -19,7 +19,7 @@ target/
 *.iml
 *.ipr
 ###Private Key
-/src/main/resources/persona-animal-8f25a-firebase-adminsdk-fbsvc-ce9d981e72.json
+/src/main/resources/firebase-service-account.json
 
 ### NetBeans ###
 /nbproject/private/
