@@ -113,10 +113,25 @@
 
 	<build>
 		<plugins>
-			<!-- Spring Boot Maven Plugin -->
+			<!-- Spring Boot plugin -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<!-- Flyway plugin -->
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<version>9.22.3</version>
+				<configuration>
+					<url>jdbc:postgresql://localhost:5432/persona_animal_database</url>
+					<user>postgres</user>
+					<password>G4x8cKLm119dF</password>
+					<schemas>
+						<schema>public</schema>
+					</schemas>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
