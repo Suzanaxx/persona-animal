@@ -1,0 +1,17 @@
+INSERT INTO animals (name, image_url) VALUES
+                                          ('bik',   '../static/images/animals/bik.jpeg'),
+                                          ('cebela','../static/images/animals/cebela.jpeg'),
+                                          ('galeb', '../static/images/animals/galeb.jpeg'),
+                                          ('konj',  '../static/images/animals/konj.jpeg'),
+                                          ('lev',   '../static/images/animals/lev.jpeg'),
+                                          ('lisica','../static/images/animals/lisica.jpg'),
+                                          ('macka', '../static/images/animals/macka.jpg'),
+                                          ('medved','../static/images/animals/medved.jpg'),
+                                          ('mravlja','../static/images/animals/mravlja.jpg'),
+                                          ('opica', '../static/images/animals/opica.jpeg'),
+                                          ('orel',  '../static/images/animals/orel.jpeg'),
+                                          ('pes',   '../static/images/animals/pes.jpg'),
+                                          ('slon',  '../static/images/animals/slon.jpg'),
+                                          ('sova',  '../static/images/animals/sova.jpg'),
+                                          ('srna',  '../static/images/animals/srna.jpg'),
+                                          ('zajec', '../static/images/animals/zajec.jpeg');
