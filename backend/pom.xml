@@ -125,6 +125,7 @@
 				<artifactId>flyway-maven-plugin</artifactId>
 				<version>9.22.3</version>
 				<configuration>
+					<cleanDisabled>false</cleanDisabled>
 					<url>jdbc:postgresql://localhost:5432/persona_animal_database</url>
 					<user>postgres</user>
 					<password>G4x8cKLm119dF</password>
