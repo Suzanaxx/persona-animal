@@ -1,7 +1,7 @@
 package com.animal.persona.controller;
 
-import com.animal.persona.model.User;
-import com.animal.persona.repository.UserRepository;
+import com.animal.persona.model.Users;
+import com.animal.persona.repository.UsersRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,19 +10,19 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UsersRepository usersRepository;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(UsersRepository usersRepository) {
+        this.usersRepository = usersRepository;
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<Users> getAllUsers() {
+        return usersRepository.findAll();
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userRepository.save(user);
+    public Users createUser(@RequestBody Users users) {
+        return usersRepository.save(users);
     }
 }

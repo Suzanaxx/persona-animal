@@ -1,4 +1,3 @@
-// src/components/AnimalSelector.tsx
 import { useEffect, useState } from 'react';
 
 interface Animal {
@@ -6,27 +5,30 @@ interface Animal {
     name: string;
     imageUrl: string;
 }
-//
+
 interface AnimalSelectorProps {
     onSelectionComplete: (animalId: string) => void;
 }
+
+const API_BASE_URL = 'http://localhost:8080';
 
 export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => {
     const [animals, setAnimals] = useState<Animal[]>([]);
     const [currentPair, setCurrentPair] = useState<Animal[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [clickCount, setClickCount] = useState(0);
 
     useEffect(() => {
         const fetchAnimals = async () => {
             try {
-                const response = await fetch('/api/animals');
+                const response = await fetch(`${API_BASE_URL}/api/animals`);
                 const data = await response.json();
                 const shuffled = data.sort(() => Math.random() - 0.5);
                 setAnimals(shuffled);
                 setCurrentPair(shuffled.slice(0, 2));
             } catch (err) {
-                setError('Napaka pri nalaganju živali');
+                setError('Napaka pri nalaganju živali ' + err);
             } finally {
                 setLoading(false);
             }
@@ -35,25 +37,27 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
         fetchAnimals();
     }, []);
 
-    const handleSelect = async (selectedAnimal: Animal) => {
-        try {
-            // Shrani izbiro v bazo
-            await fetch('/api/selections', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ animalId: selectedAnimal.id }),
-            });
+    const handleSelect = (selectedAnimal: Animal) => {
+        const newClickCount = clickCount + 1;
+        setClickCount(newClickCount);
 
-            // Generiraj nov par
-            const remaining = animals.filter(a => a.id !== selectedAnimal.id);
-            setAnimals(remaining);
-            setCurrentPair([selectedAnimal, remaining[0]]);
+        // Odstrani izbrano žival in trenutno prikazane iz seznama
+        const remaining = animals.filter(a => !currentPair.some(c => c.id === a.id));
 
-            if (remaining.length === 0) {
-                onSelectionComplete(selectedAnimal.id);
-            }
-        } catch (err) {
-            setError('Napaka pri shranjevanju izbire');
+        // Izberi novi par, če je dovolj živali
+        if (newClickCount === 10) {
+            // Po 10. kliku zaključimo in pokličemo onSelectionComplete
+            onSelectionComplete(selectedAnimal.id);
+        } else {
+            // Izberi nov par iz preostalih (najprej dodamo izbrano žival nazaj med ostale)
+            // Da ne zmanjka prehitro, ampak po želji lahko ne dodajamo nazaj.
+            const updatedAnimals = [...remaining, selectedAnimal];
+            const shuffled = updatedAnimals.sort(() => Math.random() - 0.5);
+
+            setAnimals(shuffled);
+
+            const newPair = shuffled.slice(0, 2);
+            setCurrentPair(newPair);
         }
     };
 
@@ -71,7 +75,7 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
                         className="animal-card"
                     >
                         <img
-                            src={animal.imageUrl}
+                            src={`${API_BASE_URL}${animal.imageUrl}`}
                             alt={animal.name}
                             className="animal-image"
                         />
@@ -79,6 +83,7 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
                     </button>
                 ))}
             </div>
+            <div>Izbrano: {clickCount} / 10</div>
         </div>
     );
 };
