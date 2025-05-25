@@ -20,7 +20,7 @@ const API_BASE_URL = 'http://localhost:8080';
 const MAX_KLIKOV = 5;
 
 export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => {
-    const [pool, setPool] = useState<Animal[]>([]);            // vse živali, ki še niso bile prikazane
+    const [pool, setPool] = useState<Animal[]>([]);
     const [currentPair, setCurrentPair] = useState<Animal[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -36,10 +36,8 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
                 const res = await fetch(`${API_BASE_URL}/api/animals`);
                 const data: Animal[] = await res.json();
                 const shuffled = data.sort(() => Math.random() - 0.5);
-                setPool(shuffled);
-                setCurrentPair(shuffled.slice(0, 2));
-                // odstranimo te dve iz poola
                 setPool(shuffled.slice(2));
+                setCurrentPair(shuffled.slice(0, 2));
             } catch (err) {
                 setError('Napaka pri nalaganju živali ' + err);
             } finally {
@@ -54,7 +52,6 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
         const newClickCount = clickCount + 1;
         setClickCount(newClickCount);
 
-        // pri vsakem kliku odstranimo obe živali iz currentPair iz poola (če še obstajata)
         const newPool = pool.filter(a => !currentPair.some(c => c.id === a.id));
         setPool(newPool);
 
@@ -73,34 +70,29 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
                 setLoadingTraits(false);
             }
         } else {
-            // izberemo naslednji par iz newPool
             if (newPool.length < 2) {
                 setError('Ni dovolj živali za nadaljevanje.');
                 return;
             }
             const shuffled = newPool.sort(() => Math.random() - 0.5);
             setCurrentPair(shuffled.slice(0, 2));
-            // pool posodobimo brez teh dveh
             setPool(shuffled.slice(2));
         }
     };
 
     const handleReset = () => {
-        // resetiramo vse
         setClickCount(0);
         setSelectedAnimal(null);
         setTraits([]);
         setError('');
         setLoading(true);
-        // ponovno naložimo in zmešamo pool
         (async () => {
             try {
                 const res = await fetch(`${API_BASE_URL}/api/animals`);
                 const data: Animal[] = await res.json();
                 const shuffled = data.sort(() => Math.random() - 0.5);
-                setPool(shuffled);
-                setCurrentPair(shuffled.slice(0, 2));
                 setPool(shuffled.slice(2));
+                setCurrentPair(shuffled.slice(0, 2));
             } catch (err) {
                 setError('Napaka pri nalaganju živali ' + err);
             } finally {
@@ -109,8 +101,31 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
         })();
     };
 
+    const handleSaveAssessment = async () => {
+        if (!selectedAnimal) return;
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/self-assessments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    animalId: selectedAnimal.id,
+                }),
+            });
+
+            if (!res.ok) throw new Error('Napaka pri shranjevanju samoocenitve.');
+
+            alert('Samoocenitev uspešno shranjena!');
+        } catch (err) {
+            alert('Napaka: ' + err);
+        }
+    };
+
     if (loading) return <div>Nalagam živali...</div>;
-    if (error)   return <div className="error">{error}</div>;
+    if (error) return <div className="error">{error}</div>;
 
     if (selectedAnimal) {
         return (
@@ -143,7 +158,14 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
                                 </ul>
                             </div>
                         </div>
-                        <button onClick={handleReset}>Poskusi ponovno</button>
+                        <div style={{ marginTop: '1rem' }}>
+                            <button onClick={handleSaveAssessment} style={{ marginRight: '1rem' }}>
+                                Shrani samoocenitev
+                            </button>
+                            <button onClick={handleReset}>
+                                Poskusi ponovno
+                            </button>
+                        </div>
                     </>
                 )}
             </div>
@@ -165,7 +187,7 @@ export const AnimalSelector = ({ onSelectionComplete }: AnimalSelectorProps) => 
                             src={`${API_BASE_URL}${animal.imageUrl}`}
                             alt={animal.name}
                             className="animal-image"
-                            style={{ width: '300px', height : '300px', objectFit: 'cover' }}
+                            style={{ width: '500px', height: '300px', objectFit: 'cover' }}
                         />
                         <span className="animal-name">{animal.name}</span>
                     </button>
