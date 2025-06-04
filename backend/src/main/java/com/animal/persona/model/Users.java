@@ -9,10 +9,10 @@ import java.util.UUID;
 public class Users {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO) // ali IDENTITY, a ker je UUID, AUTO je priporočeno
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(name="firebase_uid", nullable = true, unique = true)
+    @Column(name = "firebase_uid", nullable = true, unique = true)
     private String firebaseUid;
 
     @Column(nullable = true, unique = true)
@@ -39,10 +39,26 @@ public class Users {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getters & setters ...
+    // Getters & setters
 
     public UUID getId() {
         return id;
+    }
+
+    public String getFirebaseUid() {
+        return firebaseUid;
+    }
+
+    public void setFirebaseUid(String firebaseUid) {
+        this.firebaseUid = firebaseUid;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getName() {
@@ -63,5 +79,9 @@ public class Users {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }
