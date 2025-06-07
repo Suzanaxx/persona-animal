@@ -21,8 +21,14 @@ public class History {
     @Column(nullable = false)
     private String name;
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    private String personName;
 
     @PrePersist
     protected void onCreate() {
@@ -64,5 +70,14 @@ public class History {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+
+    public String getPersonName() {
+        return personName;
+    }
+
+    public void setPersonName(String personName) {
+        this.personName = personName;
     }
 }

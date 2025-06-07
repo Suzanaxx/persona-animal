@@ -13,30 +13,38 @@ export const SelectorHistory = () => {
   const [selfAssessments, setSelfAssessments] = useState<AssessmentHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [otherAssessments, setOtherAssessments] = useState<AssessmentHistoryItem[]>([]);
 
   useEffect(() => {
-    if (activeTab === 'samoocenitev') {
-      setLoading(true);
-      setError('');
+  setLoading(true);
+  setError('');
 
-      fetch(`${API_BASE_URL}/api/history/self-assessments`, {
-        credentials: "include",
-      })
-        .then(res => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}: napaka pri nalaganju zgodovine.`);
-          return res.json();
-        })
-        .then((data: AssessmentHistoryItem[]) => {
-          setSelfAssessments(data);
-        })
-        .catch(err => {
-          setError(String(err));
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
-  }, [activeTab]);
+  const endpoint =
+    activeTab === 'samoocenitev'
+      ? '/api/history/self-assessments'
+      : '/api/history/other-assessments';
+
+  fetch(`${API_BASE_URL}${endpoint}`, {
+    credentials: 'include',
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}: napaka pri nalaganju zgodovine.`);
+      return res.json();
+    })
+    .then((data: AssessmentHistoryItem[]) => {
+      if (activeTab === 'samoocenitev') {
+        setSelfAssessments(data);
+      } else {
+        setOtherAssessments(data);
+      }
+    })
+    .catch((err) => {
+      setError(String(err));
+    })
+    .finally(() => {
+      setLoading(false);
+    });
+}, [activeTab]);
 
   return (
     <div className="selector-history">
@@ -85,8 +93,25 @@ export const SelectorHistory = () => {
         {activeTab === 'druge' && (
           <div>
             <h3>Zgodovina ocen drugih</h3>
-            <p>Tu bo prikazana zgodovina ocen drugih oseb...</p>
-            {/* Kasneje lahko naložiš podatke iz endpointa /api/history/other-assessments */}
+            {loading && <p>Nalagam...</p>}
+            {error && <p className="error">{error}</p>}
+            {!loading && otherAssessments.length === 0 && <p>Ni shranjenih ocen drugih oseb.</p>}
+            <ul className="history-list">
+              {otherAssessments.map((item, index) => (
+                <li key={index} className="history-item">
+                  <img
+                    src={`${API_BASE_URL}${item.imageUrl}`}
+                    alt={item.animalName}
+                    style={{ width: '100px', height: '80px', objectFit: 'cover' }}
+                  />
+                  <div>
+                    <strong>{item.animalName}</strong>
+                    <br />
+                    <small>{new Date(item.date).toLocaleString()}</small>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

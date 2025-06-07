@@ -92,26 +92,28 @@ export const Compatibility = () => {
   };
 
  const handleSaveAssessment = async () => {
-    if (!selectedAnimal) return;
+  if (!selectedAnimal || !personName.trim()) return;
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/history/self-assessment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",        // ← to vrne
-        body: JSON.stringify({ animalId: Number(selectedAnimal.id) }),
-      });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/history/other-assessment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        animalId: Number(selectedAnimal.id),
+        personName: personName.trim()
+      }),
+    });
 
-      if (!response.ok) {
-        
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      alert('Samoocenitev uspešno shranjena v zgodovino!');
-    } catch (err) {
-      alert('Napaka pri shranjevanju samoocenitve: ' + err);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
-  };
+
+    alert('Ocenitev uspešno shranjena v zgodovino!');
+  } catch (err) {
+    alert('Napaka pri shranjevanju ocene druge osebe: ' + err);
+  }
+};
 
   if (step === 'vnos') {
     return (
