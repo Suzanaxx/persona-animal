@@ -36,3 +36,4 @@ build/
 
 # Firebase service key
 src/main/resources/firebase/serviceAccountKey.json
+src/main/resources/application.properties
