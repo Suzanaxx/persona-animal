@@ -14,44 +14,50 @@ interface CompatibilityResultDTO {
 }
 
 interface CompatibilityResultProps {
-  // animalId osebe, ki jo je uporabnik pravkar ocenil
-  otherAnimalId: number;
+  otherAnimalId: number; // animalId osebe, ki jo je uporabnik pravkar ocenil
 }
 
 export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps) => {
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CompatibilityResultDTO | null>(null);
+  const [selfImageUrl, setSelfImageUrl] = useState<string | null>(null);
+  const [otherAnimalImageUrl, setOtherAnimalImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCompatibility = async () => {
       try {
-        // 1) Pridobiš seznam vseh samoocenitev (z animalId, imageUrl, date)
+        // Pridobi samoocene
         const resSelf = await fetch(
           'http://localhost:8080/api/history/self-assessments-full',
           { credentials: 'include' }
         );
-        if (!resSelf.ok) {
-          throw new Error(`Napaka ${resSelf.status} pri nalaganju samoocenitev`);
-        }
+        if (!resSelf.ok) throw new Error('Napaka pri nalaganju samoocenitev');
+
         const selfList: SelfFullDTO[] = await resSelf.json();
+        if (!selfList.length) throw new Error('Nimate še nobene samoocenitve.');
 
-        if (!selfList.length) {
-          throw new Error('Nimate še nobene samoocenitve. Najprej opravite samooceno.');
-        }
-
-        // vzemi zadnjo samoocenitev
         const latest = selfList[selfList.length - 1];
         const selfAnimalId = latest.animalId;
+        setSelfImageUrl(latest.imageUrl);
 
-        // 2) Pokliči compatibility endpoint
+        // Pridobi sliko druge živali
+        const resOther = await fetch(
+          `http://localhost:8080/api/animals/${otherAnimalId}`,
+          { credentials: 'include' }
+        );
+        if (resOther.ok) {
+          const otherAnimal = await resOther.json();
+          if (otherAnimal.imageUrl) setOtherAnimalImageUrl(otherAnimal.imageUrl);
+        }
+
+        // Pridobi kompatibilnost
         const resComp = await fetch(
           `http://localhost:8080/api/compatibility?animal1=${selfAnimalId}&animal2=${otherAnimalId}`,
           { credentials: 'include' }
         );
-        if (!resComp.ok) {
-          throw new Error(`Napaka ${resComp.status} pri izračunu kompatibilnosti`);
-        }
+        if (!resComp.ok) throw new Error('Napaka pri izračunu kompatibilnosti');
+
         const compData: CompatibilityResultDTO = await resComp.json();
         setResult(compData);
       } catch (err: any) {
@@ -64,15 +70,56 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
     fetchCompatibility();
   }, [otherAnimalId]);
 
-  if (loading) return <p>Pripravljam primerjavo ujemanja …</p>;
-  if (error) return <p className="error">Napaka: {error}</p>;
+  if (loading)
+    return (
+      <div className="text-center text-white mt-10 text-lg animate-pulse">
+        Pripravljam primerjavo ujemanja …
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="text-red-400 bg-red-100 border border-red-300 px-4 py-3 rounded-md mt-6 text-center max-w-lg mx-auto">
+        Napaka: {error}
+      </div>
+    );
+
   if (!result) return null;
 
   return (
-    <div className="compatibility-result">
-      <h2>Ujemanje: {result.compatibilityPercent.toFixed(2)} %</h2>
-      <h3>{result.categoryName}</h3>
-      <p>{result.categoryDescription}</p>
+    <div className="compatibility-result bg-gray-800 text-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto mt-10">
+      <h2 className="text-3xl font-bold text-pink-400 mb-2 text-center">
+        Ujemanje: {result.compatibilityPercent.toFixed(2)}%
+      </h2>
+
+      {/* Sliki obeh živali */}
+      <div className="flex justify-center items-center gap-8 mt-6">
+        {selfImageUrl && (
+          <div className="flex flex-col items-center">
+            <img
+              src={selfImageUrl}
+              alt="Vaša žival"
+              className="w-24 h-24 rounded-full object-cover border-2 border-[#3b7d5c]"
+            />
+            <p className="mt-2 text-sm text-gray-400">Vaša žival</p>
+          </div>
+        )}
+        {otherAnimalImageUrl && (
+          <div className="flex flex-col items-center">
+            <img
+              src={otherAnimalImageUrl}
+              alt="Druga žival"
+              className="w-24 h-24 rounded-full object-cover border-2 border-[#3b7d5c]"
+            />
+            <p className="mt-2 text-sm text-gray-400">Druga žival</p>
+          </div>
+        )}
+      </div>
+
+      <h3 className="text-xl font-semibold text-white text-center mt-6 mb-2">
+        {result.categoryName}
+      </h3>
+      <p className="text-gray-300 leading-relaxed text-center">{result.categoryDescription}</p>
     </div>
   );
 };
