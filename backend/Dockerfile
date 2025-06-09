@@ -1,7 +1,25 @@
-#Use an official OpenJDK runtime as a parent image
+#-------- Stage 1: Build --------
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+
+WORKDIR /app
+
+#Copy Maven project files
+COPY pom.xml .
+COPY src ./src
+
+#Package the Spring Boot application
+RUN mvn clean package -DskipTests
+
+#-------- Stage 2: Run --------
 FROM eclipse-temurin:21-jdk
-ARG JAR_FILE=target/*.jar
-#Copy the built jar file to the container
-COPY target/backend-0.0.1-SNAPSHOT.jar app.jar
-#Run the jar file
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+WORKDIR /app
+
+#Copy the jar from the previous stage
+COPY --from=build /app/target/*.jar app.jar
+
+#Expose Spring Boot default port
+EXPOSE 8080
+
+#Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
