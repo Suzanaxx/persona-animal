@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 public class History {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "serial")
     private Long id;
 
     @ManyToOne
@@ -21,10 +20,6 @@ public class History {
     @Column(nullable = false)
     private String name;
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -35,7 +30,7 @@ public class History {
         this.createdAt = LocalDateTime.now();
     }
 
-    // GETTERS AND SETTERS - DODAJTE TE METODE
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -72,6 +67,9 @@ public class History {
         return createdAt;
     }
 
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
     public String getPersonName() {
         return personName;
