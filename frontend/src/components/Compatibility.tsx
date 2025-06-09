@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CompatibilityResult } from './CompatibilityResult';
 
 interface Animal {
   id: string;
@@ -20,7 +21,7 @@ const MAX_KLIKOV = 5;
 export const Compatibility = () => {
   const [personName, setPersonName] = useState('');
   const [category, setCategory] = useState<Category | ''>('');
-  const [step, setStep] = useState<'vnos' | 'ocenjevanje' | 'rezultat'>('vnos');
+  const [step, setStep] = useState<'vnos' | 'ocenjevanje' | 'rezultat' | 'prikazi-ujemanje'>('vnos');
 
   const [pool, setPool] = useState<Animal[]>([]);
   const [currentPair, setCurrentPair] = useState<Animal[]>([]);
@@ -30,6 +31,7 @@ export const Compatibility = () => {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [traits, setTraits] = useState<AnimalTraitDTO[]>([]);
   const [loadingTraits, setLoadingTraits] = useState(false);
+  const [otherAnimalId, setOtherAnimalId] = useState<number | null>(null);
 
   useEffect(() => {
     if (step === 'ocenjevanje') {
@@ -59,7 +61,9 @@ export const Compatibility = () => {
     const newCount = clickCount + 1;
     setClickCount(newCount);
 
-    const newPool = pool.filter(a => a.id !== animal.id && !currentPair.some(c => c.id === a.id));
+    const newPool = pool.filter(
+      (a) => a.id !== animal.id && !currentPair.some((c) => c.id === a.id)
+    );
     setPool(newPool);
 
     if (newCount === MAX_KLIKOV) {
@@ -89,31 +93,35 @@ export const Compatibility = () => {
     setStep('vnos');
     setPersonName('');
     setCategory('');
+    setOtherAnimalId(null);
   };
 
- const handleSaveAssessment = async () => {
-  if (!selectedAnimal || !personName.trim()) return;
+  const handleSaveAssessment = async () => {
+    if (!selectedAnimal || !personName.trim()) return;
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/history/other-assessment`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        animalId: Number(selectedAnimal.id),
-        personName: personName.trim()
-      }),
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/history/other-assessment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          animalId: Number(selectedAnimal.id),
+          personName: personName.trim(),
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      setOtherAnimalId(Number(selectedAnimal.id));
+      alert('Ocenitev uspešno shranjena!');
+    } catch (err) {
+      alert('Napaka pri shranjevanju ocene druge osebe: ' + err);
     }
+  };
 
-    alert('Ocenitev uspešno shranjena v zgodovino!');
-  } catch (err) {
-    alert('Napaka pri shranjevanju ocene druge osebe: ' + err);
-  }
-};
+  console.log('Trenutni STEP:', step);
 
   if (step === 'vnos') {
     return (
@@ -124,18 +132,19 @@ export const Compatibility = () => {
             type="text"
             placeholder="Ime osebe"
             value={personName}
-            onChange={e => setPersonName(e.target.value)}
+            onChange={(e) => setPersonName(e.target.value)}
           />
         </div>
 
         <div className="input-box">
-          <h2>Izberi kategorijo</h2><br></br>
+          <h2>Izberi kategorijo</h2>
+          <br />
           <div className="category-select">
             {[
               { key: 'živali', img: 'zivali.jpg' },
               { key: 'rastline', img: 'rastline.jpg' },
               { key: 'vozila', img: 'vozila.jpg' },
-            ].map(k => (
+            ].map((k) => (
               <div
                 key={k.key}
                 className={`category-card ${category === k.key ? 'selected' : ''}`}
@@ -150,7 +159,9 @@ export const Compatibility = () => {
 
         <button
           className="primary"
-          onClick={() => personName && category && setStep('ocenjevanje')}
+          onClick={() =>
+            personName && category && setStep('ocenjevanje')
+          }
           disabled={!personName || !category}
         >
           Začni ocenjevanje
@@ -162,19 +173,21 @@ export const Compatibility = () => {
   if (step === 'rezultat' && selectedAnimal) {
     return (
       <div className="animal-detail">
-        <h2>Izbrana osebnost za osebo {personName}: <span style={{ color: 'var(--primary)' }}>{selectedAnimal.name}</span></h2>
+        <h2>
+          Izbrana osebnost za osebo {personName}:{' '}
+          <span style={{ color: 'var(--primary)' }}>{selectedAnimal.name}</span>
+        </h2>
         <img
-            src={`${API_BASE_URL}${selectedAnimal.imageUrl}`}
-            className="animal-image-large"
-          />
-         <p className="intro-text">
-          Na podlagi izbranih slik smo ocenili, da <span className="highlighted">{personName}</span> najbolj ustreza osebnosti <span className="highlighted">{selectedAnimal.name}</span>.
-          Vsaka izbira pove nekaj o načinu razmišljanja, čustvenih odzivih in socialnem vedenju.
-        
-       
-          Spodaj si lahko ogledaš pozitivne in negativne lastnosti, ki smo jih zaznali pri tej osebnosti.  
-          Če želiš preveriti, kako kompatibilna je ta oseba s tabo, klikni na gumb za primerjavo!
+          src={`${API_BASE_URL}${selectedAnimal.imageUrl}`}
+          className="animal-image-large"
+          alt={selectedAnimal.name}
+        />
+        <p className="intro-text">
+          Na podlagi izbranih slik smo ocenili, da{' '}
+          <span className="highlighted">{personName}</span> najbolj ustreza osebnosti{' '}
+          <span className="highlighted">{selectedAnimal.name}</span>.
         </p>
+
         {loadingTraits ? (
           <div className="spinner"></div>
         ) : (
@@ -187,38 +200,70 @@ export const Compatibility = () => {
                 </tr>
               </thead>
               <tbody>
-                {Array.from({ length: Math.max(
-                  traits.filter(t => t.positive).length,
-                  traits.filter(t => !t.positive).length
-                ) }).map((_, i) => (
+                {Array.from({
+                  length: Math.max(
+                    traits.filter((t) => t.positive).length,
+                    traits.filter((t) => !t.positive).length
+                  ),
+                }).map((_, i) => (
                   <tr key={i}>
-                    <td>{traits.filter(t => t.positive)[i]?.description || ''}</td>
-                    <td>{traits.filter(t => !t.positive)[i]?.description || ''}</td>
+                    <td>{traits.filter((t) => t.positive)[i]?.description || ''}</td>
+                    <td>{traits.filter((t) => !t.positive)[i]?.description || ''}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            <button className="primary" onClick={handleSaveAssessment}>Shrani ocenitev</button>
-            <button className="secondary" onClick={handleReset}>Ocenjuj novo osebo</button>
+            <div className="action-buttons">
+              <button className="primary" onClick={handleSaveAssessment}>
+                Shrani ocenitev
+              </button>
+
+              <button className="secondary" onClick={handleReset}>
+                Ocenjuj novo osebo
+              </button>
+
+              <button
+                className="secondary"
+                onClick={() => setStep('prikazi-ujemanje')}
+                disabled={otherAnimalId === null}
+              >
+                Primerjaj ujemanje
+              </button>
+            </div>
           </>
         )}
       </div>
     );
   }
 
+  if (step === 'prikazi-ujemanje' && otherAnimalId !== null) {
+    return (
+      <div style={{ padding: '1rem' }}>
+        <CompatibilityResult otherAnimalId={otherAnimalId} />
+        <button onClick={handleReset} style={{ marginTop: '1rem' }}>
+          Poskusi znova
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="animal-selector">
-      <h2>Ocenjuješ osebo: <strong>{personName}</strong></h2>
-      <p style={{ textAlign: 'center' }}>Klikni na sliko, ki najbolje upodobi osebo ki jo ocenjuješ</p>
+      <h2 className="section-title">
+        Ocenjuješ osebo: <strong>{personName}</strong>
+      </h2>
+      <p style={{ textAlign: 'center' }}>
+        Klikni na sliko, ki najbolje upodobi osebo, ki jo ocenjuješ
+      </p>
       <div className="progress-container">
         <div
           className="progress-fill"
           style={{ width: `${(clickCount / MAX_KLIKOV) * 100}%` }}
-        ></div>
+        />
       </div>
       <div className="animal-pair">
-        {currentPair.map(animal => (
+        {currentPair.map((animal) => (
           <button
             key={animal.id}
             onClick={() => handleSelect(animal)}
@@ -230,7 +275,6 @@ export const Compatibility = () => {
               alt={animal.name}
               className="animal-image"
             />
-            
           </button>
         ))}
       </div>
