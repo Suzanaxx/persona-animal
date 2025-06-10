@@ -170,21 +170,24 @@ export const Compatibility = () => {
 
   if (step === 'rezultat' && selectedAnimal) {
     return (
+      
       <div className="animal-detail">
-        <h2>
-          Izbrana osebnost za osebo {personName}:{' '}
-          <span style={{ color: 'var(--primary)' }}>{selectedAnimal.name}</span>
-        </h2>
+         <h2>Izbrana osebnost za osebo {personName}: <span style={{ color: 'var(--primary)' }}>{selectedAnimal.name}</span></h2>
+
         <img
           src={`${API_BASE_URL}${selectedAnimal.imageUrl}`}
           className="animal-image-large"
           alt={selectedAnimal.name}
         />
         <p className="intro-text">
-          Na podlagi izbranih slik smo ocenili, da{' '}
-          <span className="highlighted">{personName}</span> najbolj ustreza osebnosti{' '}
-          <span className="highlighted">{selectedAnimal.name}</span>.
+          Na podlagi izbranih slik smo ocenili, da <span className="highlighted">{personName}</span> najbolj ustreza osebnosti <span className="highlighted">{selectedAnimal.name}</span>.
+          Vsaka izbira pove nekaj o načinu razmišljanja, čustvenih odzivih in socialnem vedenju.
+        
+       
+          Spodaj si lahko ogledaš pozitivne in negativne lastnosti, ki smo jih zaznali pri tej osebnosti.  
+          Če želiš preveriti, kako kompatibilna je ta oseba s tabo, klikni na gumb za primerjavo!
         </p>
+
 
         {loadingTraits ? (
           <div className="spinner"></div>
@@ -204,10 +207,15 @@ export const Compatibility = () => {
                     traits.filter((t) => !t.positive).length
                   ),
                 }).map((_, i) => (
-                  <tr key={i}>
-                    <td>{traits.filter((t) => t.positive)[i]?.description || ''}</td>
-                    <td>{traits.filter((t) => !t.positive)[i]?.description || ''}</td>
+                 <tr key={i}>
+                    <td style={{ color: 'green' }}>
+                      {traits.filter(t => t.positive)[i]?.description || ''}
+                    </td>
+                    <td style={{ color: 'red' }}>
+                      {traits.filter(t => !t.positive)[i]?.description || ''}
+                    </td>
                   </tr>
+
                 ))}
               </tbody>
             </table>
