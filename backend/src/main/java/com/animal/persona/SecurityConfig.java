@@ -6,39 +6,54 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 public class SecurityConfig {
 
     @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Omogočimo CORS za vaš front-end (http://localhost:5173)
-                .cors(Customizer.withDefaults())
-                // Onemogočimo CSRF, ker ga React ne pošilja samodejno
+                .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())
-                // Onemogočimo browserjev Basic‐Auth (torej ne bo več modala “Sign in”)
                 .httpBasic(basic -> basic.disable())
-                // Upravljanje pravic do URL-jev
-                .authorizeHttpRequests(auth ->
-                        auth
-                                // Javne poti:
-                                .requestMatchers("/api/animals/**").permitAll()
-                                .requestMatchers("/api/animal_traits/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        // Public read access
+                        .requestMatchers(HttpMethod.GET, "/api/animals/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/animal_traits/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/history/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/traits/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/**").permitAll()
 
-                                // **TO JE KLJUČNO** – dovolite vsem dostop do /api/history/** (brez preverjanja)
-                                .requestMatchers("/api/history/**").permitAll()
+                        // Authenticated write access for categories and animals
+                        .requestMatchers(HttpMethod.POST, "/api/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT,  "/api/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/animals/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT,  "/api/animals/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/animals/**").authenticated()
 
-                                // Če imate kakšne druge klice /api/user/**, jih lahko tudi dovolite:
-                                .requestMatchers("/api/user/**").permitAll()
-
-                                // Vse ostalo pustite odprto (zaenkrat permitAll)
-                                .anyRequest().permitAll()
+                        // All other requests allowed for now
+                        .anyRequest().permitAll()
                 )
-                // Če v prihodnje želite preverjati Firebase token, pustite ta filter
-                .addFilterBefore(new FirebaseAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-        ;
+                .addFilterBefore(new FirebaseAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

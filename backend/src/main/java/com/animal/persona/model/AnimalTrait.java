@@ -17,7 +17,6 @@ public class AnimalTrait {
     @Column(name = "trait_id", nullable = false)
     private Integer traitId;
 
-    // Konstruktorji
     public AnimalTrait() {}
 
     public AnimalTrait(Integer animalId, Integer traitId) {
@@ -25,7 +24,6 @@ public class AnimalTrait {
         this.traitId = traitId;
     }
 
-    // Get/set
     public Integer getAnimalId() {
         return animalId;
     }
@@ -42,7 +40,6 @@ public class AnimalTrait {
         this.traitId = traitId;
     }
 
-    // IdClass za sestavljeni ključ
     public static class AnimalTraitId implements Serializable {
         private Integer animalId;
         private Integer traitId;

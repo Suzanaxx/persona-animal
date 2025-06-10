@@ -3,30 +3,26 @@ package com.animal.persona.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "animals")
-public class Animal {
+@Table(name = "categories")
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(unique = true, nullable = false)
     private String name;
 
+    // Novo polje za sliko kategorije (URL ali pot do slike)
     @Column(name = "image_url")
     private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-
-
     // Constructors
-    public Animal() {}
+    public Category() {}
 
-    public Animal(String name, String imageUrl, Category category) {
+    public Category(String name, String imageUrl) {
         this.name = name;
         this.imageUrl = imageUrl;
-        this.category = category;
     }
 
     // Getters/setters
@@ -53,13 +49,5 @@ public class Animal {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
     }
 }

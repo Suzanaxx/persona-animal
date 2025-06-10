@@ -2,7 +2,6 @@ package com.animal.persona.controller;
 
 import com.animal.persona.dto.HistoryRequestOtherDTO;
 import com.animal.persona.dto.HistoryResponseDTO;
-import com.animal.persona.dto.SelfFullDTO;
 import com.animal.persona.model.Animal;
 import com.animal.persona.model.History;
 import com.animal.persona.model.Users;
@@ -42,9 +41,6 @@ public class HistoryController {
         this.historyRepository = historyRepository;
     }
 
-    // ======================================================
-    // 1) Shrani samoocenitev
-    // ======================================================
     @PostMapping("/self-assessment")
     public ResponseEntity<History> saveSelfAssessment(
             @RequestBody SelfAssessmentRequest request,
@@ -64,9 +60,11 @@ public class HistoryController {
         return ResponseEntity.ok(history);
     }
 
-    // ======================================================
-    // 2) Obstoječi GET /self-assessments (brez animalId)
-    // ======================================================
+    /**
+     * Novi endpoint: vrne seznam zapisov v obliki HistoryResponseDTO
+     * – pridobimo userja, poiščemo v history, nato (za vsak history vnos)
+     * naredimo join na tabelo animals, da dobimo ime in sliko.
+     */
     @GetMapping("/self-assessments")
     public ResponseEntity<List<HistoryResponseDTO>> getSelfAssessments(HttpServletRequest httpRequest) {
         Users user = userService.getCurrentUser(httpRequest);
@@ -103,38 +101,6 @@ public class HistoryController {
         return ResponseEntity.ok(dtoList);
     }
 
-    // ======================================================
-    // 3) NOVI endpoint: GET /self-assessments-full (z animalId in imageUrl)
-    // ======================================================
-    @GetMapping("/self-assessments-full")
-    public ResponseEntity<List<SelfFullDTO>> getSelfAssessmentsFull(HttpServletRequest httpRequest) {
-        Users user = userService.getCurrentUser(httpRequest);
-        if (user == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        UUID userId = user.getId();
-        List<History> historyList = historyService.getUserHistory(userId).stream()
-                .filter(h -> h.getPersonName() == null || h.getPersonName().isBlank())
-                .collect(Collectors.toList());
-
-        List<SelfFullDTO> dtoList = historyList.stream()
-                .map(h -> new SelfFullDTO(
-                        h.getId(),
-                        h.getAnimalId(),
-                        animalRepository.findById(h.getAnimalId())
-                                .map(Animal::getImageUrl)
-                                .orElse(""),
-                        h.getCreatedAt()
-                ))
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(dtoList);
-    }
-
-    // ======================================================
-    // 4) STANDARDNI GET po ID-ju
-    // ======================================================
     @GetMapping("/{id}")
     public ResponseEntity<History> getHistoryById(@PathVariable Long id) {
         return historyService.getHistoryById(id)
@@ -142,9 +108,6 @@ public class HistoryController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ======================================================
-    // 5) Brisanje zapisa
-    // ======================================================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteHistory(@PathVariable Long id) {
         if (historyService.deleteHistory(id)) {
@@ -153,9 +116,7 @@ public class HistoryController {
         return ResponseEntity.notFound().build();
     }
 
-    // ======================================================
-    // 6) Samoocenitveni POST‐DTO
-    // ======================================================
+    // DTO za POST request
     public static class SelfAssessmentRequest {
         private Integer animalId;
 
@@ -168,9 +129,29 @@ public class HistoryController {
         }
     }
 
-    // ======================================================
-    // 7) Ocene drugih oseb (POST in GET)
-    // ======================================================
+    //od tu naprej je za ocene drugih oseb
+
+    public static class OtherAssessmentRequest {
+        private Integer animalId;
+        private String personName;
+
+        public Integer getAnimalId() {
+            return animalId;
+        }
+
+        public void setAnimalId(Integer animalId) {
+            this.animalId = animalId;
+        }
+
+        public String getPersonName() {
+            return personName;
+        }
+
+        public void setPersonName(String personName) {
+            this.personName = personName;
+        }
+    }
+
     @PostMapping("/other-assessment")
     public ResponseEntity<Void> saveOtherAssessment(@RequestBody HistoryRequestOtherDTO request,
                                                     HttpServletRequest httpRequest) {
@@ -179,14 +160,22 @@ public class HistoryController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        System.out.println("Shranjujem oceno za: " + request.getPersonName());
+        if (request.getAnimalId() == null || request.getPersonName() == null || request.getPersonName().isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Preveri, če žival obstaja
+        boolean exists = animalRepository.existsById(request.getAnimalId());
+        if (!exists) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
 
         History history = new History();
         history.setUser(user);
         history.setAnimalId(request.getAnimalId());
         history.setCreatedAt(LocalDateTime.now());
         history.setPersonName(request.getPersonName());
-        history.setName(request.getPersonName()); // ← tukaj gre ime druge osebe
+        history.setName("Ocena za " + request.getPersonName());
 
         historyRepository.save(history);
         return ResponseEntity.ok().build();
@@ -203,29 +192,23 @@ public class HistoryController {
         List<History> historyList = historyService.getUserHistory(userId);
 
         List<HistoryResponseDTO> dtoList = historyList.stream()
-                .filter(h -> h.getPersonName() != null && !h.getPersonName().isBlank())
+                .filter(h -> !h.getPersonName().startsWith("Samoocenitev"))
                 .map(history -> {
                     Animal animal = animalRepository.findById(history.getAnimalId())
                             .orElse(null);
-
                     if (animal == null) {
-                        return new HistoryResponseDTO(
-                                "NEZNANA ŽIVAL",
-                                "",
-                                history.getCreatedAt(),
-                                history.getPersonName()
-                        );
+                        return new HistoryResponseDTO("NEZNANA ŽIVAL", "", history.getCreatedAt(), history.getPersonName());
                     }
-
                     return new HistoryResponseDTO(
                             animal.getName(),
                             animal.getImageUrl(),
                             history.getCreatedAt(),
                             history.getPersonName()
                     );
-                })
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
 
         return ResponseEntity.ok(dtoList);
     }
+
+
 }

@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface AnimalTraitRepository extends JpaRepository<AnimalTrait, AnimalTraitId> {
 
+    boolean existsByAnimalIdAndTraitId(Integer animalId, Integer traitId);
+
     @Query("""
         select new com.animal.persona.dto.AnimalTraitDTO(
             t.id, t.description, t.isPositive)

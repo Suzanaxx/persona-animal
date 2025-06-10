@@ -15,7 +15,7 @@ interface AnimalTraitDTO {
 
 type Category = 'živali' | 'rastline' | 'vozila';
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://backend-wqgy.onrender.com';
 const MAX_KLIKOV = 5;
 
 export const Compatibility = () => {
@@ -120,8 +120,6 @@ export const Compatibility = () => {
       alert('Napaka pri shranjevanju ocene druge osebe: ' + err);
     }
   };
-
-  console.log('Trenutni STEP:', step);
 
   if (step === 'vnos') {
     return (

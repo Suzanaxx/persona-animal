@@ -31,8 +31,13 @@ public class TraitController {
     }
 
     @PostMapping
-    public Trait createTrait(@RequestBody Trait trait) {
-        return traitRepository.save(trait);
+    public ResponseEntity<?> createTrait(@RequestBody Trait trait) {
+        if (traitRepository.findAll().stream()
+                .anyMatch(t -> t.getDescription().equalsIgnoreCase(trait.getDescription()))) {
+            return ResponseEntity.badRequest().body("Trait with this description already exists");
+        }
+        Trait saved = traitRepository.save(trait);
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/{id}")
