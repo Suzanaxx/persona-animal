@@ -1,56 +1,105 @@
+:root {
+  --primary: #3b7d5c;
+  --secondary: #a7d7c5;
+  --background: #f2fef7;
+  --text: #2f4858;
+  --error: #dc2626;
+
+  --card-bg: #ffffff;
+  --card-border: #d1d5db;
+
+  --button-bg: #3b7d5c;
+  --button-hover: #2e6650;
+  --button-text: #ffffff;
+
+  --progress-bg: #d1d5db;
+  --progress-fill: #3b7d5c;
+
+  --warm-orange: #f97316;
+  --dark-olive: #2e3d2f;
+}
+
 .auth-container {
   max-width: 400px;
   margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #fafafa;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.auth-container h2 {
+h2 {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  color: #333;
 }
 
 .form-group {
   margin-bottom: 1rem;
 }
 
-.form-group label {
+label {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.4rem;
+  color: #444;
+  font-weight: 500;
 }
 
-.form-group input {
+input {
   width: 100%;
-  padding: 8px;
-  box-sizing: border-box;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.3s;
+}
+
+input:focus {
+  border-color: var(--primary);
+  outline: none;
 }
 
 .error {
   color: red;
-  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
 }
 
 .submit-button {
   width: 100%;
-  padding: 10px;
-  background: #1976d2;
-  color: white;
+  padding: 0.75rem;
+  background-color: var(--primary);
   border: none;
-  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+  background-color: var(--primary);
 }
 
 .toggle-text {
   text-align: center;
   margin-top: 1rem;
+  font-size: 0.95rem;
 }
 
 .toggle-button {
+  margin-left: 0.4rem;
   background: none;
   border: none;
-  color: #1976d2;
+  color: var(--primary);
   cursor: pointer;
   font-weight: bold;
+  text-decoration: underline;
+}
+
+.toggle-button:hover {
+  color: var(--primary);
 }

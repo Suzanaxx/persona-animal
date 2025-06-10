@@ -6,6 +6,10 @@ import { AnimalSelector } from './components/AnimalSelector';
 import { Compatibility } from './components/Compatibility';
 import { SelectorHistory } from './components/SelectorHistory';
 import Auth from './components/Auth'; // prijava/registracija
+import { Toaster } from 'sonner'; //pop-up sporočila
+import 'react-toastify/dist/ReactToastify.css';
+
+
 
 type Page = 'domov' | 'samoocenitev' | 'oceni' | 'zgodovina' | 'prijava';
 type Kategorija = 'živali' | 'rastline' | 'vozila';
@@ -87,9 +91,9 @@ export const App = () => {
   };
 
   const renderCategoryCards = () => (
-    <div className="category-select">
+    <div >
       <h2>Izberi kategorijo za svojo samooceno</h2>
-      <div className="card-container">
+      <div className="category-select">
         <CategoryCard name="Živali" image="zivali.jpg" onClick={() => handleCategorySelect('živali')} />
         <CategoryCard name="Rastline" image="rastline.jpg" onClick={() => handleCategorySelect('rastline')} />
         <CategoryCard name="Prevozna sredstva" image="vozila.jpg" onClick={() => handleCategorySelect('vozila')} />
@@ -144,26 +148,33 @@ export const App = () => {
                 Zgodovina
               </button>
             </li>
-          </ul>
+          
 
-          {/* Desni del navigacije: profil / prijava */}
-          <div className="profile-section">
-            {user ? (
-              <button onClick={handleLogout} className="logout-button">
-                👤 {user.username} (Odjava)
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setActivePage('prijava');
-                  setMenuOpen(false);
-                }}
-                className="login-button"
-              >
-                Prijava
-              </button>
-            )}
-          </div>
+          <li>
+            <div>
+              {user ? (
+                <div>
+                <span className='highlighted'>{user.username}</span>
+                <button onClick={handleLogout} className="menu-btn">
+                  <p>Odjava</p>
+                  
+                </button>
+                
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setActivePage('prijava');
+                    setMenuOpen(false);
+                  }}
+                  className="menu-btn"
+                >
+                  Prijava
+                </button>
+              )}
+            </div>
+          </li>
+        </ul>
         </nav>
 
         {/* Glavni del */}

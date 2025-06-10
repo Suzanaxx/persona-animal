@@ -1,6 +1,9 @@
 // src/components/AnimalSelector.tsx
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Animal {
   id: string;
@@ -102,40 +105,31 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
   };
 
   const handleSaveAssessment = async () => {
-    if (!selectedAnimal) return;
+  if (!selectedAnimal) return;
 
-    // Če uporabnik ni prijavljen, prikažemo zeleno (success) sporočilo z navodilom
-    if (!user) {
-      setSaveAlert('Prosim prijavite se za možnost hranjenja zgodovine.');
-      // Očistimo morebitno že obstajajoče sporočilo o uspehu
-      setSaveSuccess(null);
-      return;
-    }
+  if (!user) {
+    toast.error('Prosim prijavite se za možnost hranjenja zgodovine.');
+    return;
+  }
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/history/self-assessment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          animalId: Number(selectedAnimal.id),
-          userId: user.id, // če backend zahteva userId
-        }),
-      });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/history/self-assessment`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        animalId: Number(selectedAnimal.id),
+        userId: user.id,
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      // Ob uspešnem shranjevanju prikažemo sporočilo o uspehu
-      setSaveSuccess('Samoocenitev uspešno shranjena v zgodovino!');
-      // Po potrebi lahko ob uspehu skrijemo predhodno opozorilo
-      setSaveAlert(null);
-    } catch (err) {
-      setSaveAlert('Napaka pri shranjevanju samoocenitve: ' + err);
-      setSaveSuccess(null);
-    }
-  };
+    toast.success('Samoocenitev uspešno shranjena v zgodovino!');
+  } catch (err) {
+    toast.error('Napaka pri shranjevanju: ' + err);
+  }
+};
 
   if (loading) {
     return (
@@ -184,8 +178,12 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
                   ),
                 }).map((_, index) => (
                   <tr key={index}>
-                    <td>{traits.filter(t => t.positive)[index]?.description || ''}</td>
-                    <td>{traits.filter(t => !t.positive)[index]?.description || ''}</td>
+                    <td style={{ color: 'green' }}>
+                      {traits.filter(t => t.positive)[index]?.description || ''}
+                    </td>
+                    <td style={{ color: 'red' }}>
+                      {traits.filter(t => !t.positive)[index]?.description || ''}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -203,6 +201,7 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
       </div>
     );
   }
+  
 
   return (
     <div className="animal-selector">
@@ -230,6 +229,7 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
           </button>
         ))}
       </div>
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 };
