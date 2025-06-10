@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './Auth.css';
-import { auth } from './firebaseConfig';  // Uvozimo auth iz firebaseConfig.ts
+import { auth } from './firebaseConfig';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -27,19 +27,41 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
       if (isRegistering) {
         // Registracija
         userCred = await createUserWithEmailAndPassword(auth, email, password);
+        console.log('User registered:', userCred.user.uid);
       } else {
         // Prijava
         userCred = await signInWithEmailAndPassword(auth, email, password);
+        console.log('User logged in:', userCred.user.uid);
       }
 
-      // Po uspehu prijave/registracije pošljemo nazaj ID in email
+      // Pridobi ID token
+      const idToken = await userCred.user.getIdToken();
+      console.log('ID Token:', idToken);
+
+      // Pošlji token na backend
+      const response = await fetch('http://localhost:8080/users/me', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status} - ${await response.text()}`);
+      }
+
+      const userData = await response.json();
+      console.log('User data from backend:', userData);
+
+      // Po uspehu prijave/registraciji pošljemo nazaj ID in email
       const firebaseUser = userCred.user;
       onLoginSuccess({
         id: firebaseUser.uid,
         username: firebaseUser.email || firebaseUser.uid,
       });
     } catch (err: any) {
-      setError(err.message);
+      console.error('Authentication or backend error:', err);
+      setError(err.message || 'An error occurred during authentication or backend communication');
     }
   };
 

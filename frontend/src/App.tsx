@@ -1,15 +1,11 @@
-// src/App.tsx
-
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { AnimalSelector } from './components/AnimalSelector';
 import { Compatibility } from './components/Compatibility';
 import { SelectorHistory } from './components/SelectorHistory';
-import Auth from './components/Auth'; // prijava/registracija
-import { Toaster } from 'sonner'; //pop-up sporočila
+import Auth from './components/Auth';
+import { Toaster } from 'sonner';
 import 'react-toastify/dist/ReactToastify.css';
-
-
 
 type Page = 'domov' | 'samoocenitev' | 'oceni' | 'zgodovina' | 'prijava';
 type Kategorija = 'živali' | 'rastline' | 'vozila';
@@ -23,14 +19,11 @@ export const App = () => {
   const [activePage, setActivePage] = useState<Page>('domov');
   const [selectedCategory, setSelectedCategory] = useState<Kategorija | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false); // Novo stanje za dropdown
 
-  // State za prijavljenega uporabnika
   const [user, setUser] = useState<UserInfo | null>(null);
-
-  // State za sporočilo (info)
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
-  // Ob zagonu aplikacije preverimo localStorage, če je uporabnik že prijavljen
   useEffect(() => {
     const stored = localStorage.getItem('user');
     if (stored) {
@@ -42,24 +35,22 @@ export const App = () => {
     }
   }, []);
 
-  // Funkcija za prikaz sporočila in samodejni izbris po 3 sekundah
   const showInfoMessage = (msg: string) => {
     setInfoMessage(msg);
     setTimeout(() => setInfoMessage(null), 3000);
   };
 
-  // Ko se uporabnik uspešno prijavi/registrira, pokličemo to funkcijo
   const handleLoginSuccess = (userInfo: UserInfo) => {
     setUser(userInfo);
     localStorage.setItem('user', JSON.stringify(userInfo));
     setActivePage('domov');
   };
 
-  // Odjava
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
     setActivePage('domov');
+    setLogoutOpen(false); // Zapri dropdown po odjavi
   };
 
   const handleCategorySelect = (kategorija: Kategorija) => {
@@ -68,7 +59,6 @@ export const App = () => {
     setMenuOpen(false);
   };
 
-  // Funkcija za gumb Zgodovina z obravnavo prijave
   const handleZgodovinaClick = () => {
     if (!user) {
       showInfoMessage('Prosim prijavite se za možnost zgodovine.');
@@ -79,7 +69,6 @@ export const App = () => {
     setMenuOpen(false);
   };
 
-  // Funkcija za gumb Oceni drugega z obravnavo prijave
   const handleOceniClick = () => {
     if (!user) {
       showInfoMessage('Za ocenjevanje drugih se moraš najprej prijaviti.');
@@ -91,9 +80,9 @@ export const App = () => {
   };
 
   const renderCategoryCards = () => (
-    <div >
+    <div className="category-select">
       <h2>Izberi kategorijo za svojo samooceno</h2>
-      <div className="category-select">
+      <div className="card-container">
         <CategoryCard name="Živali" image="zivali.jpg" onClick={() => handleCategorySelect('živali')} />
         <CategoryCard name="Rastline" image="rastline.jpg" onClick={() => handleCategorySelect('rastline')} />
         <CategoryCard name="Prevozna sredstva" image="vozila.jpg" onClick={() => handleCategorySelect('vozila')} />
@@ -103,22 +92,14 @@ export const App = () => {
 
   return (
     <div className="app">
-      {/* Prikaz sporočila */}
-      {infoMessage && (
-        <div className="info-message">
-          {infoMessage}
-        </div>
-      )}
-
-      {/* Hamburger / meni gumb */}
+      <Toaster />
+      {infoMessage && <div className="info-message">{infoMessage}</div>}
       <div className="hamburger-container">
         <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
           ☰
         </button>
       </div>
-
       <div className="layout">
-        {/* Navigacija */}
         <nav className={`menu ${menuOpen ? 'open' : ''}`}>
           <ul>
             <li>
@@ -148,50 +129,43 @@ export const App = () => {
                 Zgodovina
               </button>
             </li>
-          
-
-          <li>
-            <div>
-              {user ? (
-                <div>
-                <span className='highlighted'>{user.username}</span>
-                <button onClick={handleLogout} className="menu-btn">
-                  <p>Odjava</p>
-                  
-                </button>
-                
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setActivePage('prijava');
-                    setMenuOpen(false);
-                  }}
-                  className="menu-btn"
-                >
-                  Prijava
-                </button>
-              )}
-            </div>
-          </li>
-        </ul>
+          </ul>
+          <div className="profile-section">
+            {user ? (
+              <div className="profile-dropdown">
+                <span className="username" onClick={() => setLogoutOpen(!logoutOpen)}>
+                  👤 {user.username}
+                </span>
+                {logoutOpen && (
+                  <button onClick={handleLogout} className="logout-btn">
+                    Odjava
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setActivePage('prijava');
+                  setMenuOpen(false);
+                }}
+                className="menu-btn"
+              >
+                Prijava
+              </button>
+            )}
+          </div>
         </nav>
-
-        {/* Glavni del */}
         <main className="content">
           {activePage === 'domov' && renderCategoryCards()}
-
           {activePage === 'samoocenitev' && (
             <>
               {selectedCategory ? (
-                // Tukaj zdaj posredujemo user kot prop
                 <AnimalSelector category={selectedCategory} user={user} />
               ) : (
                 <p>Najprej izberi kategorijo na strani Domov.</p>
               )}
             </>
           )}
-
           {activePage === 'oceni' && (
             <>
               {!user ? (
@@ -201,7 +175,6 @@ export const App = () => {
               )}
             </>
           )}
-
           {activePage === 'zgodovina' && (
             <>
               {!user ? (
@@ -211,11 +184,7 @@ export const App = () => {
               )}
             </>
           )}
-
-          {activePage === 'prijava' && (
-            // Prikaže komponento Auth, ki ob uspehu kliče handleLoginSuccess
-            <Auth onLoginSuccess={handleLoginSuccess} />
-          )}
+          {activePage === 'prijava' && <Auth onLoginSuccess={handleLoginSuccess} />}
         </main>
       </div>
     </div>

@@ -4,17 +4,13 @@
   --background: #f2fef7;
   --text: #2f4858;
   --error: #dc2626;
-
   --card-bg: #ffffff;
   --card-border: #d1d5db;
-
   --button-bg: #3b7d5c;
   --button-hover: #2e6650;
   --button-text: #ffffff;
-
   --progress-bg: #d1d5db;
   --progress-fill: #3b7d5c;
-
   --warm-orange: #f97316;
   --dark-olive: #2e3d2f;
 }
@@ -49,6 +45,10 @@ html, body, #root {
 
 .hamburger-container {
   display: none;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1001;
 }
 
 .hamburger {
@@ -66,6 +66,7 @@ html, body, #root {
   padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   transition: transform 0.4s ease;
 }
 
@@ -80,20 +81,47 @@ html, body, #root {
 
 .profile-section {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 1rem;
+  top: 10px;
+  right: 10px; /* Premaknjen na desno zgoraj */
   display: flex;
-  justify-content: flex-start; /* poravnano levo */
+  align-items: center;
 }
 
-.logout-button {
-  background: none;
-  border: none;
+.profile-dropdown {
+  position: relative;
+}
+
+.username {
   cursor: pointer;
+  color: var(--primary);
   font-weight: bold;
-  color: #333;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: var(--card-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.username:hover {
+  background-color: var(--button-hover);
+  color: var(--button-text);
+}
+
+.logout-btn {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--error);
+  color: var(--button-text);
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logout-btn:hover {
+  background-color: #0f5f07;
 }
 
 /* === RESPONSIVE PRILAGODITEV === */
@@ -104,46 +132,29 @@ html, body, #root {
 
   .hamburger-container {
     display: block;
-    background-color: var(--secondary);
-    padding: 1rem;
   }
-
-  .hamburger {
-    font-size: 2rem;
-    background: none;
-    border: none;
-    color: var(--primary);
-    cursor: pointer;
-  }
-
 
   .menu {
     position: absolute;
     top: 60px;
     left: 0;
     width: 100%;
-    height: 100%;
-    background-color: var(--secondary);
-    z-index: 999;
+    height: calc(100% - 60px);
     transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;
   }
 
   .menu.open {
-    transform: translateY(0%);
+    transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
   }
 
-  .menu ul {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .menu li {
-    width: 100%;
-    text-align: center;
+  .profile-section {
+    top: 10px;
+    right: 10px;
+    position: fixed; /* Ostane na desni zgoraj tudi na mobilnih */
   }
 }
 
@@ -152,25 +163,21 @@ html, body, #root {
   padding: 0.7rem 1rem;
   background-color: transparent;
   color: var(--primary);
-  border-color: var(--primary);
+  border: 2px solid var(--primary);
   font-size: 1rem;
   font-weight: bold;
   text-align: center;
   cursor: pointer;
   border-radius: 25px;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .menu-btn:hover,
 .menu-btn.active {
   background-color: var(--primary);
-  color: var(--button-text); /* white */
+  color: var(--button-text);
   border-color: var(--primary);
 }
-
 
 .content {
   flex: 1;
@@ -188,7 +195,7 @@ html, body, #root {
   display: flex;
   justify-content: center;
   gap: 2rem;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   margin-top: 2rem;
 }
 
@@ -198,23 +205,10 @@ html, body, #root {
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
   width: 240px;
-}
-
-.category-card img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-}
-
-.category-card h3 {
-  padding: 1rem;
-}
-
-.category-card:hover {
-  transform: scale(1.05);
+  text-align: center;
 }
 
 .category-card img {
@@ -226,10 +220,16 @@ html, body, #root {
 .category-card h3 {
   padding: 1rem;
   margin: 0;
+  color: var(--text);
 }
 
 .category-card:hover {
   transform: scale(1.05);
+}
+
+.category-card.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary);
 }
 
 /* === Izbira entitet === */
@@ -310,12 +310,12 @@ html, body, #root {
 }
 
 .traits-table-centered th {
-  background-color:  #3b7d5c;
-  color: #d1d5db;
+  background-color: var(--primary);
+  color: var(--button-text);
 }
 
-.traits-table-centered td{
-  background-color: #dddddd9c;
+.traits-table-centered td {
+  background-color: #e0e0e0;
 }
 
 /* === Povzetek in opis === */
@@ -343,17 +343,20 @@ html, body, #root {
 .intro-text {
   text-align: center;
   max-width: 700px;
-  margin-top: 0.5rem;
+  margin: 0.5rem auto;
   font-size: 1rem;
-  color: #000000;
+  color: var(--text);
   line-height: 1.6;
-  background-color: #ddddddc4;
+  background-color: rgba(221, 221, 221, 0.8);
+  padding: 1rem;
+  border-radius: 8px;
 }
 
 .section-title {
   text-align: center;
   font-size: 1.8rem;
   margin-bottom: 1rem;
+  color: var(--dark-olive);
 }
 
 .highlighted {
@@ -408,6 +411,7 @@ button.primary {
   border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
+  transition: background-color 0.2s ease;
 }
 
 button.secondary {
@@ -418,6 +422,7 @@ button.secondary {
   border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
+  transition: background-color 0.2s ease;
 }
 
 button.primary:hover {
@@ -478,15 +483,17 @@ button.secondary:hover {
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: #27863b;
-  color: #333;
+  background-color: var(--primary);
+  color: var(--button-text);
   padding: 10px 20px;
   border-radius: 5px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   font-weight: 600;
 }
-/* ZGODOVINA */
+
+/* === ZGODOVINA === */
+
 .selector-history {
   max-width: 800px;
   margin: 0 auto;
@@ -497,6 +504,7 @@ button.secondary:hover {
   font-size: 1.8rem;
   margin-bottom: 1.2rem;
   text-align: center;
+  color: var(--dark-olive);
 }
 
 .history-buttons {
@@ -508,9 +516,9 @@ button.secondary:hover {
 
 .tab-button {
   padding: 0.6rem 1.2rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--card-border);
   border-radius: 12px;
-  background-color: #f0f0f0;
+  background-color: var(--card-bg);
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -518,7 +526,7 @@ button.secondary:hover {
 
 .tab-button.active {
   background-color: var(--primary);
-  color: white;
+  color: var(--button-text);
   border-color: var(--primary);
 }
 
@@ -530,6 +538,7 @@ button.secondary:hover {
   font-size: 1.3rem;
   margin-bottom: 1rem;
   text-align: left;
+  color: var(--text);
 }
 
 .history-list {
@@ -542,7 +551,7 @@ button.secondary:hover {
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--card-border);
   padding: 0.8rem 0;
 }
 
@@ -551,7 +560,7 @@ button.secondary:hover {
   height: 80px;
   object-fit: cover;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--card-border);
 }
 
 .history-info {
@@ -562,6 +571,7 @@ button.secondary:hover {
 .animal-name {
   font-weight: 600;
   font-size: 1.1rem;
+  color: var(--text);
 }
 
 .history-date {
@@ -577,4 +587,3 @@ button.secondary:hover {
   font-style: italic;
   color: #666;
 }
-

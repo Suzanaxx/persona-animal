@@ -1,9 +1,5 @@
-// src/components/AnimalSelector.tsx
-
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { getAuth } from 'firebase/auth';
 
 interface Animal {
   id: string;
@@ -24,35 +20,35 @@ interface AnimalSelectorProps {
   user: { id: string; username: string } | null;
 }
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://backend-wqgy.onrender.com';
 const MAX_KLIKOV = 5;
 
 export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
   const [pool, setPool] = useState<Animal[]>([]);
   const [currentPair, setCurrentPair] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [clickCount, setClickCount] = useState(0);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [traits, setTraits] = useState<AnimalTraitDTO[]>([]);
   const [loadingTraits, setLoadingTraits] = useState(false);
-
-  // NOVO: lokalno stanje za obvestila (alerts)
   const [saveAlert, setSaveAlert] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   const loadAnimals = async () => {
     setLoading(true);
-    setError('');
+    setError(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/animals?category=${category}`);
-      if (!res.ok) throw new Error(`Napaka ${res.status}`);
+      const res = await fetch(`${API_BASE_URL}/api/animals?category=${category}`, {
+        credentials: 'include', // Omogoči cookies za avtentikacijo
+      });
+      if (!res.ok) throw new Error(`Napaka ${res.status}: ${await res.text()}`);
       const data: Animal[] = await res.json();
       const shuffled = data.sort(() => Math.random() - 0.5);
       setPool(shuffled.slice(2));
       setCurrentPair(shuffled.slice(0, 2));
     } catch (err) {
-      setError('Napaka pri nalaganju: ' + err);
+      setError('Napaka pri nalaganju živali: ' + (err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -60,7 +56,6 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
 
   useEffect(() => {
     loadAnimals();
-    // ob spremembi kategorije resetiramo stanje
     setClickCount(0);
     setSelectedAnimal(null);
     setTraits([]);
@@ -78,12 +73,14 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
       setSelectedAnimal(animal);
       setLoadingTraits(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/animal_traits/traits/${animal.id}`);
-        if (!res.ok) throw new Error(`Napaka ${res.status}`);
+        const res = await fetch(`${API_BASE_URL}/api/animal_traits/traits/${animal.id}`, {
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error(`Napaka ${res.status}: ${await res.text()}`);
         const data: AnimalTraitDTO[] = await res.json();
         setTraits(data);
       } catch (err) {
-        setError(String(err));
+        setError('Napaka pri nalaganju lastnosti: ' + (err as Error).message);
       } finally {
         setLoadingTraits(false);
       }
@@ -105,36 +102,55 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
   };
 
   const handleSaveAssessment = async () => {
-  if (!selectedAnimal) return;
+    if (!selectedAnimal) return;
 
-  if (!user) {
-    toast.error('Prosim prijavite se za možnost hranjenja zgodovine.');
-    return;
-  }
+    if (!user) {
+      setSaveAlert('Prosim prijavite se za možnost hranjenja zgodovine.');
+      setSaveSuccess(null);
+      return;
+    }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/history/self-assessment`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        animalId: Number(selectedAnimal.id),
-        userId: user.id,
-      }),
-    });
+    const auth = getAuth();
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) {
+      setSaveAlert('Napaka pri pridobivanju avtentikacijskega tokena.');
+      setSaveSuccess(null);
+      return;
+    }
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    try {
+      console.log("Saving animal ID:", selectedAnimal.id, typeof selectedAnimal.id); // Debug
+      const response = await fetch(`${API_BASE_URL}/api/history/self-assessment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          animalId: Number(selectedAnimal.id) // Send only animalId
+        }),
+      });
 
-    toast.success('Samoocenitev uspešno shranjena v zgodovino!');
-  } catch (err) {
-    toast.error('Napaka pri shranjevanju: ' + err);
-  }
-};
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server error:", errorText); // Debug
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      setSaveSuccess('Samoocenitev uspešno shranjena v zgodovino!');
+      setSaveAlert(null);
+    } catch (err) {
+      console.error("Save error:", err); // Debug
+      setSaveAlert('Napaka pri shranjevanju samoocenitve: ' + (err as Error).message);
+      setSaveSuccess(null);
+    }
+  };
 
   if (loading) {
     return (
       <div className="animal-selector">
-        <p>Nalagam...</p>
+        <p className="loading">Nalagam...</p>
       </div>
     );
   }
@@ -145,8 +161,7 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
   if (selectedAnimal) {
     return (
       <div className="animal-detail">
-        {/* Če obstaja alert ali uspešno sporočilo, ga prikažemo nad vsebino */}
-        {saveAlert && <div className="alert alert-success">{saveAlert}</div>}
+        {saveAlert && <div className="alert alert-error">{saveAlert}</div>}
         {saveSuccess && <div className="alert alert-success">{saveSuccess}</div>}
 
         <div className="animal-summary">
@@ -160,7 +175,7 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
           />
         </div>
         {loadingTraits ? (
-          <p>Nalagam lastnosti...</p>
+          <p className="loading">Nalagam lastnosti...</p>
         ) : (
           <>
             <table className="traits-table-centered">
@@ -178,10 +193,10 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
                   ),
                 }).map((_, index) => (
                   <tr key={index}>
-                    <td style={{ color: 'green' }}>
+                    <td className={traits.filter(t => t.positive)[index]?.positive === false ? 'negative-trait' : ''}>
                       {traits.filter(t => t.positive)[index]?.description || ''}
                     </td>
-                    <td style={{ color: 'red' }}>
+                    <td className={traits.filter(t => !t.positive)[index]?.positive === false ? 'negative-trait' : ''}>
                       {traits.filter(t => !t.positive)[index]?.description || ''}
                     </td>
                   </tr>
@@ -201,7 +216,6 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
       </div>
     );
   }
-  
 
   return (
     <div className="animal-selector">
@@ -229,7 +243,6 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
           </button>
         ))}
       </div>
-      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 };
