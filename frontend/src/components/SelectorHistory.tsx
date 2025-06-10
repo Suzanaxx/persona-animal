@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import { getAuth } from 'firebase/auth';
 
 interface AssessmentHistoryItem {
   animalName: string;
   imageUrl: string;
   date: string;
+  personName?: string; // Dodano za ocene drugih
 }
 
 const API_BASE_URL = 'https://backend-wqgy.onrender.com';
@@ -13,32 +15,47 @@ export const SelectorHistory = () => {
   const [selfAssessments, setSelfAssessments] = useState<AssessmentHistoryItem[]>([]);
   const [otherAssessments, setOtherAssessments] = useState<AssessmentHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [personName, getPersonName] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    setError('');
+    const loadHistory = async () => {
+      setLoading(true);
+      setError(null);
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        setError('Prosimo, prijavite se za ogled zgodovine.');
+        setLoading(false);
+        return;
+      }
 
-    const endpoint =
-      activeTab === 'samoocenitev'
-        ? '/api/history/self-assessments'
-        : '/api/history/other-assessments';
+      const endpoint =
+        activeTab === 'samoocenitev'
+          ? '/api/history/self-assessments'
+          : '/api/history/other-assessments';
 
-    fetch(`${API_BASE_URL}${endpoint}`, { credentials: 'include' })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}: napaka pri nalaganju zgodovine.`);
-        return res.json();
-      })
-      .then((data: AssessmentHistoryItem[]) => {
+      try {
+        const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+        const data: AssessmentHistoryItem[] = await res.json();
         if (activeTab === 'samoocenitev') {
           setSelfAssessments(data);
         } else {
           setOtherAssessments(data);
         }
-      })
-      .catch((err) => setError(String(err)))
-      .finally(() => setLoading(false));
+      } catch (err) {
+        setError('Napaka pri nalaganju zgodovine: ' + (err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistory();
   }, [activeTab]);
 
   const renderAssessmentList = (items: AssessmentHistoryItem[]) => {
@@ -57,7 +74,8 @@ export const SelectorHistory = () => {
             />
             <div className="history-info">
               <div className="animal-name">{item.animalName}</div>
-              <div className="history-date">{new Date(item.date).toLocaleString()}</div>
+              {item.personName && <div>{`Oseba: ${item.personName}`}</div>}
+              <div className="history-date">{new Date(item.date).toLocaleString('sl-SI')}</div>
             </div>
           </li>
         ))}
