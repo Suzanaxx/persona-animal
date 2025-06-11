@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import { AnimalSelector } from './components/AnimalSelector';
 import { Compatibility } from './components/Compatibility';

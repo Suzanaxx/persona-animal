@@ -26,8 +26,8 @@ export const Compatibility = () => {
 
   const [pool, setPool] = useState<Animal[]>([]);
   const [currentPair, setCurrentPair] = useState<Animal[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setLoading] = useState(false); 
+  const [, setError] = useState<string | null>(null);
   const [clickCount, setClickCount] = useState(0);
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [traits, setTraits] = useState<AnimalTraitDTO[]>([]);
