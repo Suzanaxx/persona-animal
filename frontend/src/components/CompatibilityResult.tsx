@@ -26,66 +26,68 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
   const [otherAnimalImageUrl, setOtherAnimalImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-  const fetchCompatibility = async () => {
-    try {
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Uporabnik ni prijavljen.');
+    const fetchCompatibility = async () => {
+      try {
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) throw new Error('Uporabnik ni prijavljen.');
 
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-      };
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+        };
 
-      // 1. Samoocena
-      const resSelf = await fetch(
-        'https://backend-wqgy.onrender.com/api/history/self-assessments-full',
-        {
-          headers,
-          credentials: 'include',
+        // 1. Samoocena
+        const resSelf = await fetch(
+          'https://backend-wqgy.onrender.com/api/history/self-assessments-full',
+          {
+            headers,
+            credentials: 'include',
+          }
+        );
+        if (!resSelf.ok) throw new Error('Napaka pri nalaganju samoocenitev');
+        const selfList: SelfFullDTO[] = await resSelf.json();
+        if (!selfList.length) throw new Error('Nimate še nobene samoocenitve.');
+
+        const latest = selfList[selfList.length - 1];
+        const selfAnimalId = latest.animalId;
+        setSelfImageUrl(`/images/animals/${latest.imageUrl}`);
+
+        // 2. Slika druge živali
+        const resOther = await fetch(
+          `https://backend-wqgy.onrender.com/api/animals/${otherAnimalId}`,
+          {
+            headers,
+            credentials: 'include',
+          }
+        );
+        if (resOther.ok) {
+          const otherAnimal = await resOther.json();
+          if (otherAnimal.imageUrl) {
+            setOtherAnimalImageUrl(`/images/animals/${otherAnimal.imageUrl}`);
+          }
         }
-      );
-      if (!resSelf.ok) throw new Error('Napaka pri nalaganju samoocenitev');
-      const selfList: SelfFullDTO[] = await resSelf.json();
-      if (!selfList.length) throw new Error('Nimate še nobene samoocenitve.');
 
-      const latest = selfList[selfList.length - 1];
-      const selfAnimalId = latest.animalId;
-      setSelfImageUrl(latest.imageUrl);
+        // 3. Kompatibilnost
+        const resComp = await fetch(
+          `https://backend-wqgy.onrender.com/api/compatibility?animal1=${selfAnimalId}&animal2=${otherAnimalId}`,
+          {
+            headers,
+            credentials: 'include',
+          }
+        );
+        if (!resComp.ok) throw new Error('Napaka pri izračunu kompatibilnosti');
 
-      // 2. Slika druge živali
-      const resOther = await fetch(
-        `https://backend-wqgy.onrender.com/api/animals/${otherAnimalId}`,
-        {
-          headers,
-          credentials: 'include',
-        }
-      );
-      if (resOther.ok) {
-        const otherAnimal = await resOther.json();
-        if (otherAnimal.imageUrl) setOtherAnimalImageUrl(otherAnimal.imageUrl);
+        const compData: CompatibilityResultDTO = await resComp.json();
+        setResult(compData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // 3. Kompatibilnost
-      const resComp = await fetch(
-        `https://backend-wqgy.onrender.com/api/compatibility?animal1=${selfAnimalId}&animal2=${otherAnimalId}`,
-        {
-          headers,
-          credentials: 'include',
-        }
-      );
-      if (!resComp.ok) throw new Error('Napaka pri izračunu kompatibilnosti');
-
-      const compData: CompatibilityResultDTO = await resComp.json();
-      setResult(compData);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchCompatibility();
-}, [otherAnimalId]);
+    fetchCompatibility();
+  }, [otherAnimalId]);
 
   if (loading)
     return (
