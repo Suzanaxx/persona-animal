@@ -26,10 +26,14 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
   const [otherAnimalImageUrl, setOtherAnimalImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    const BACKEND_URL = 'https://backend-wqgy.onrender.com';
+
     const fixImageUrl = (url: string | undefined) => {
       if (!url) return null;
-      if (url.startsWith('/images/')) return url;
-      return `/images/animals/${url}`;
+      if (url.startsWith('http')) return url; // če je že popoln URL, vrni takoj
+      if (url.startsWith('/images/')) return `${BACKEND_URL}${url}`; // dodaj domeno pred /images
+      // Če pa je samo ime datoteke, dodaj celotno pot
+      return `${BACKEND_URL}/images/animals/${url}`;
     };
 
     const fetchCompatibility = async () => {
