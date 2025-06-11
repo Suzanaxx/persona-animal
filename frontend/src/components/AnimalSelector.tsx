@@ -191,13 +191,13 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
                     traits.filter(t => t.positive).length,
                     traits.filter(t => !t.positive).length,
                   ),
-                }).map((_, index) => (
-                  <tr key={index}>
-                    <td className={traits.filter(t => t.positive)[index]?.positive === false ? 'negative-trait' : ''}>
-                      {traits.filter(t => t.positive)[index]?.description || ''}
+                }).map((_, i) => (
+                  <tr key={i}>
+                    <td style={{ color: 'green' }}>
+                      {traits.filter(t => t.positive)[i]?.description || ''}
                     </td>
-                    <td className={traits.filter(t => !t.positive)[index]?.positive === false ? 'negative-trait' : ''}>
-                      {traits.filter(t => !t.positive)[index]?.description || ''}
+                    <td style={{ color: 'red' }}>
+                      {traits.filter(t => !t.positive)[i]?.description || ''}
                     </td>
                   </tr>
                 ))}

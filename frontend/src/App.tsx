@@ -129,31 +129,37 @@ export const App = () => {
                 Zgodovina
               </button>
             </li>
-          </ul>
-          <div className="profile-section">
-            {user ? (
-              <div className="profile-dropdown">
-                <span className="username" onClick={() => setLogoutOpen(!logoutOpen)}>
-                  👤 {user.username}
-                </span>
-                {logoutOpen && (
-                  <button onClick={handleLogout} className="logout-btn">
-                    Odjava
-                  </button>
-                )}
-              </div>
+
+            {/* Prikaz prijave ali uporabnika */}
+            {!user ? (
+              <li>
+                <button
+                  className={activePage === 'prijava' ? 'menu-btn active' : 'menu-btn'}
+                  onClick={() => {
+                    setActivePage('prijava');
+                    setMenuOpen(false);
+                  }}
+                >
+                  Prijava
+                </button>
+              </li>
             ) : (
-              <button
-                onClick={() => {
-                  setActivePage('prijava');
-                  setMenuOpen(false);
-                }}
-                className="menu-btn"
-              >
-                Prijava
-              </button>
+              <li className="menu-user">
+                <div className="profile-dropdown">
+                  <button className="menu-btn" onClick={() => setLogoutOpen(!logoutOpen)}>
+                    👤 {user.username}
+                  </button>
+                  {logoutOpen && (
+                    <button onClick={handleLogout} className="logout-btn">
+                      Odjava
+                    </button>
+                  )}
+                </div>
+              </li>
             )}
-          </div>
+          </ul>
+
+
         </nav>
         <main className="content">
           {activePage === 'domov' && renderCategoryCards()}

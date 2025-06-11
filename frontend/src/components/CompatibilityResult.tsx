@@ -114,39 +114,34 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
   if (!result) return null;
 
   return (
-    <div className="compatibility-result bg-gray-800 text-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto mt-10">
-      <h2 className="text-3xl font-bold text-pink-400 mb-2 text-center">
-        Ujemanje: {result.compatibilityPercent.toFixed(2)}%
-      </h2>
+  <div className="compatibility-container max-w-3xl mx-auto mt-10 bg-white rounded-xl shadow-lg p-6">
+    <h2 className="text-3xl font-bold text-center text-[var(--primary)] mb-6">
+      Ujemanje: {result.compatibilityPercent.toFixed(2)}%
+    </h2>
 
-      {/* Sliki obeh živali */}
-      <div className="flex flex-wrap justify-center items-center gap-8 mt-6">
-        {selfImageUrl && (
-          <div className="flex flex-col items-center">
-            <img
-              src={selfImageUrl}
-              alt="Vaša žival"
-              className="w-32 h-32 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-[#3b7d5c] hover:scale-105 transition-transform duration-300 max-w-full"
-            />
-            <p className="mt-2 text-sm text-gray-400 text-center">Vaša žival</p>
-          </div>
-        )}
-        {otherAnimalImageUrl && (
-          <div className="flex flex-col items-center">
-            <img
-              src={otherAnimalImageUrl}
-              alt="Druga žival"
-              className="w-32 h-32 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-[#3b7d5c] hover:scale-105 transition-transform duration-300 max-w-full"
-            />
-            <p className="mt-2 text-sm text-gray-400 text-center">Druga žival</p>
-          </div>
-        )}
-      </div>
+    <div className="animal-pair justify-center gap-12 mb-6">
+      {selfImageUrl && (
+        <div className="compatibility-card">
+          <img src={selfImageUrl} alt="Vaša žival" />
+          <div className="animal-name">Vaša persona</div>
+        </div>
+      )}
+      {otherAnimalImageUrl && (
+        <div className="compatibility-card">
+          <img src={otherAnimalImageUrl} alt="Druga žival" />
+          <div className="animal-name">Presona druge osebe</div>
+        </div>
+      )}
+    </div>
 
-      <h3 className="text-xl font-semibold text-white text-center mt-6 mb-2">
+    <section className="text-center">
+      <h3 className='text-title' >
         {result.categoryName}
       </h3>
-      <p className="text-gray-300 leading-relaxed text-center">{result.categoryDescription}</p>
-    </div>
-  );
+      <p className="intro-text">
+        {result.categoryDescription}
+      </p>
+    </section>
+  </div>
+);
 };

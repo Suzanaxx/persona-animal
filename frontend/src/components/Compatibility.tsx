@@ -217,13 +217,14 @@ export const Compatibility = () => {
                   ),
                 }).map((_, i) => (
                   <tr key={i}>
-                    <td className={traits.filter(t => t.positive)[i]?.positive === false ? 'negative-trait' : ''}>
+                    <td style={{ color: 'green' }}>
                       {traits.filter(t => t.positive)[i]?.description || ''}
                     </td>
-                    <td className={traits.filter(t => !t.positive)[i]?.positive === false ? 'negative-trait' : ''}>
+                    <td style={{ color: 'red' }}>
                       {traits.filter(t => !t.positive)[i]?.description || ''}
                     </td>
                   </tr>
+
                 ))}
               </tbody>
             </table>
@@ -250,15 +251,18 @@ export const Compatibility = () => {
   }
 
   if (step === 'prikazi-ujemanje' && otherAnimalId !== null) {
-    return (
-      <div style={{ padding: '1rem' }}>
-        <CompatibilityResult otherAnimalId={otherAnimalId} />
-        <button onClick={handleReset} className="secondary" style={{ marginTop: '1rem' }}>
+  return (
+    <div style={{ padding: '1rem' }}>
+      <CompatibilityResult otherAnimalId={otherAnimalId} />
+
+      <div className="action-buttons mt-6">
+        <button onClick={handleReset} className="primary">
           Poskusi znova
         </button>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="animal-selector">
