@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getAuth } from 'firebase/auth';
 
 interface SelfFullDTO {
   historyId: number;
@@ -25,50 +26,66 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
   const [otherAnimalImageUrl, setOtherAnimalImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCompatibility = async () => {
-      try {
-        // Pridobi samoocene
-        const resSelf = await fetch(
-          'http://localhost:8080/api/history/self-assessments-full',
-          { credentials: 'include' }
-        );
-        if (!resSelf.ok) throw new Error('Napaka pri nalaganju samoocenitev');
+  const fetchCompatibility = async () => {
+    try {
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Uporabnik ni prijavljen.');
 
-        const selfList: SelfFullDTO[] = await resSelf.json();
-        if (!selfList.length) throw new Error('Nimate še nobene samoocenitve.');
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+      };
 
-        const latest = selfList[selfList.length - 1];
-        const selfAnimalId = latest.animalId;
-        setSelfImageUrl(latest.imageUrl);
-
-        // Pridobi sliko druge živali
-        const resOther = await fetch(
-          `http://localhost:8080/api/animals/${otherAnimalId}`,
-          { credentials: 'include' }
-        );
-        if (resOther.ok) {
-          const otherAnimal = await resOther.json();
-          if (otherAnimal.imageUrl) setOtherAnimalImageUrl(otherAnimal.imageUrl);
+      // 1. Samoocena
+      const resSelf = await fetch(
+        'https://backend-wqgy.onrender.com/api/history/self-assessments-full',
+        {
+          headers,
+          credentials: 'include',
         }
+      );
+      if (!resSelf.ok) throw new Error('Napaka pri nalaganju samoocenitev');
+      const selfList: SelfFullDTO[] = await resSelf.json();
+      if (!selfList.length) throw new Error('Nimate še nobene samoocenitve.');
 
-        // Pridobi kompatibilnost
-        const resComp = await fetch(
-          `http://localhost:8080/api/compatibility?animal1=${selfAnimalId}&animal2=${otherAnimalId}`,
-          { credentials: 'include' }
-        );
-        if (!resComp.ok) throw new Error('Napaka pri izračunu kompatibilnosti');
+      const latest = selfList[selfList.length - 1];
+      const selfAnimalId = latest.animalId;
+      setSelfImageUrl(latest.imageUrl);
 
-        const compData: CompatibilityResultDTO = await resComp.json();
-        setResult(compData);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      // 2. Slika druge živali
+      const resOther = await fetch(
+        `https://backend-wqgy.onrender.com/api/animals/${otherAnimalId}`,
+        {
+          headers,
+          credentials: 'include',
+        }
+      );
+      if (resOther.ok) {
+        const otherAnimal = await resOther.json();
+        if (otherAnimal.imageUrl) setOtherAnimalImageUrl(otherAnimal.imageUrl);
       }
-    };
 
-    fetchCompatibility();
-  }, [otherAnimalId]);
+      // 3. Kompatibilnost
+      const resComp = await fetch(
+        `https://backend-wqgy.onrender.com/api/compatibility?animal1=${selfAnimalId}&animal2=${otherAnimalId}`,
+        {
+          headers,
+          credentials: 'include',
+        }
+      );
+      if (!resComp.ok) throw new Error('Napaka pri izračunu kompatibilnosti');
+
+      const compData: CompatibilityResultDTO = await resComp.json();
+      setResult(compData);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCompatibility();
+}, [otherAnimalId]);
 
   if (loading)
     return (
