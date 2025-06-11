@@ -2,6 +2,7 @@ package com.animal.persona.controller;
 
 import com.animal.persona.dto.HistoryRequestOtherDTO;
 import com.animal.persona.dto.HistoryResponseDTO;
+import com.animal.persona.dto.SelfFullDTO;
 import com.animal.persona.model.Animal;
 import com.animal.persona.model.History;
 import com.animal.persona.model.Users;
@@ -10,6 +11,7 @@ import com.animal.persona.repository.HistoryRepository;
 import com.animal.persona.service.HistoryService;
 import com.animal.persona.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -206,6 +208,32 @@ public class HistoryController {
                             history.getPersonName()
                     );
                 }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtoList);
+    }
+
+    @GetMapping("/self-assessments-full")
+    public ResponseEntity<List<SelfFullDTO>> getSelfAssessmentsFull(HttpServletRequest httpRequest) {
+        Users user = userService.getCurrentUser(httpRequest);
+        if (user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        UUID userId = user.getId();
+        List<History> historyList = historyService.getUserHistory(userId).stream()
+                .filter(h -> h.getPersonName() == null || h.getPersonName().isBlank())
+                .collect(Collectors.toList());
+
+        List<SelfFullDTO> dtoList = historyList.stream()
+                .map(h -> new SelfFullDTO(
+                        h.getId(),
+                        h.getAnimalId(),
+                        animalRepository.findById(h.getAnimalId())
+                                .map(Animal::getImageUrl)
+                                .orElse(""),
+                        h.getCreatedAt()
+                ))
+                .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtoList);
     }
