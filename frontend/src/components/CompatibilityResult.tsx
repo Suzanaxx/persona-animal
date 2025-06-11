@@ -120,15 +120,15 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
       </h2>
 
       {/* Sliki obeh živali */}
-      <div className="flex justify-center items-center gap-8 mt-6">
+      <div className="flex flex-wrap justify-center items-center gap-8 mt-6">
         {selfImageUrl && (
           <div className="flex flex-col items-center">
             <img
               src={selfImageUrl}
               alt="Vaša žival"
-              className="w-24 h-24 rounded-full object-cover border-2 border-[#3b7d5c]"
+              className="w-32 h-32 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-[#3b7d5c] hover:scale-105 transition-transform duration-300 max-w-full"
             />
-            <p className="mt-2 text-sm text-gray-400">Vaša žival</p>
+            <p className="mt-2 text-sm text-gray-400 text-center">Vaša žival</p>
           </div>
         )}
         {otherAnimalImageUrl && (
@@ -136,9 +136,9 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
             <img
               src={otherAnimalImageUrl}
               alt="Druga žival"
-              className="w-24 h-24 rounded-full object-cover border-2 border-[#3b7d5c]"
+              className="w-32 h-32 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-[#3b7d5c] hover:scale-105 transition-transform duration-300 max-w-full"
             />
-            <p className="mt-2 text-sm text-gray-400">Druga žival</p>
+            <p className="mt-2 text-sm text-gray-400 text-center">Druga žival</p>
           </div>
         )}
       </div>
