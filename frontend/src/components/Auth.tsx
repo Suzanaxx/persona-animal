@@ -39,7 +39,7 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
       console.log('ID Token:', idToken);
 
       // Pošlji token na backend
-      const response = await fetch('http://localhost:8080/users/me', {
+      const response = await fetch('https://backend-wqgy.onrender.com/users/me', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${idToken}`
