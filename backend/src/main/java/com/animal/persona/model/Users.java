@@ -44,6 +44,9 @@ public class Users {
     public UUID getId() {
         return id;
     }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
     public String getFirebaseUid() {
         return firebaseUid;
