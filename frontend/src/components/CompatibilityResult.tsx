@@ -26,6 +26,12 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
   const [otherAnimalImageUrl, setOtherAnimalImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    const fixImageUrl = (url: string | undefined) => {
+      if (!url) return null;
+      if (url.startsWith('/images/')) return url;
+      return `/images/animals/${url}`;
+    };
+
     const fetchCompatibility = async () => {
       try {
         const auth = getAuth();
@@ -50,7 +56,7 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
 
         const latest = selfList[selfList.length - 1];
         const selfAnimalId = latest.animalId;
-        setSelfImageUrl(`/images/animals/${latest.imageUrl}`);
+        setSelfImageUrl(fixImageUrl(latest.imageUrl));
 
         // 2. Slika druge živali
         const resOther = await fetch(
@@ -62,9 +68,7 @@ export const CompatibilityResult = ({ otherAnimalId }: CompatibilityResultProps)
         );
         if (resOther.ok) {
           const otherAnimal = await resOther.json();
-          if (otherAnimal.imageUrl) {
-            setOtherAnimalImageUrl(`/images/animals/${otherAnimal.imageUrl}`);
-          }
+          if (otherAnimal.imageUrl) setOtherAnimalImageUrl(fixImageUrl(otherAnimal.imageUrl));
         }
 
         // 3. Kompatibilnost
