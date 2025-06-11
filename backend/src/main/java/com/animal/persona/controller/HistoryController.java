@@ -192,7 +192,7 @@ public class HistoryController {
         List<History> historyList = historyService.getUserHistory(userId);
 
         List<HistoryResponseDTO> dtoList = historyList.stream()
-                .filter(h -> !h.getPersonName().startsWith("Samoocenitev"))
+                .filter(h -> h.getPersonName() != null && !h.getPersonName().startsWith("Samoocenitev"))
                 .map(history -> {
                     Animal animal = animalRepository.findById(history.getAnimalId())
                             .orElse(null);

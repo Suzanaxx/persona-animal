@@ -112,6 +112,7 @@ export const AnimalSelector = ({ category, user }: AnimalSelectorProps) => {
 
     const auth = getAuth();
     const token = await auth.currentUser?.getIdToken();
+    console.log("Firebase ID Token:", token); // Add this line
     if (!token) {
       setSaveAlert('Napaka pri pridobivanju avtentikacijskega tokena.');
       setSaveSuccess(null);
