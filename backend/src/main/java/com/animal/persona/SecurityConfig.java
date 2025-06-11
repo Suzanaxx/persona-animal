@@ -21,7 +21,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:5173", "https://backend-wqgy.onrender.com")); // Dodan Renderjev URL
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "https://frontend-06rc.onrender.com" //
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setMaxAge(3600L);
