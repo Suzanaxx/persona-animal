@@ -36,7 +36,6 @@ const Auth: React.FC<AuthProps> = ({ onLoginSuccess }) => {
 
       // Pridobi ID token
       const idToken = await userCred.user.getIdToken();
-      console.log('ID Token:', idToken);
 
       // Pošlji token na backend
       const response = await fetch('https://backend-wqgy.onrender.com/users/me', {
