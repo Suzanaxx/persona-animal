@@ -6,13 +6,13 @@ public class HistoryResponseDTO {
     private String animalName;
     private String imageUrl;
     private LocalDateTime date;
-    private String personaName;
+    private String personName; // ← Popravljeno tukaj
 
-    public HistoryResponseDTO(String animalName, String imageUrl, LocalDateTime date, String personaName) {
+    public HistoryResponseDTO(String animalName, String imageUrl, LocalDateTime date, String personName) {
         this.animalName = animalName;
         this.imageUrl = imageUrl;
         this.date = date;
-        this.personaName = personaName;
+        this.personName = personName;
     }
 
     public HistoryResponseDTO(String animalName, String imageUrl, LocalDateTime date) {
@@ -43,11 +43,11 @@ public class HistoryResponseDTO {
         this.date = date;
     }
 
-    public String getPersonaName() {
-        return personaName;
+    public String getPersonName() {
+        return personName;
     }
 
-    public void setPersonaName(String personaName) {
-        this.personaName = personaName;
+    public void setPersonName(String personName) {
+        this.personName = personName;
     }
 }
