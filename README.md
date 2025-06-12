@@ -113,4 +113,25 @@ Run tests with:
 
 # 🐾 Persona Animal Frontend
 
-x
+Frontend aplikacija je zgrajena z uporabo **React + TypeScript** in omogoča uporabnikom interaktivno samoocenjevanje, ocenjevanje drugih oseb ter prikaz kompatibilnosti osebnosti v obliki simboličnih živali.
+
+### ⚙️ Tehnologije
+- ⚛️ React (TypeScript)
+- 🔥 Firebase Authentication
+- 🎨 CSS/Tailwind za oblikovanje
+- 🍃 REST API integracija (do backend-a)
+- ⚡ Vite kot dev strežnik
+
+---
+
+### 🧩 Ključne funkcionalnosti
+
+| Funkcija                   | Opis                                                                 |
+|----------------------------|----------------------------------------------------------------------|
+| 🔐 **Prijava**             | Firebase Google login integracija                                     |
+| 🧠 **Samoocenitev**        | Uporabnik izbere živali, ki predstavljajo njega samega               |
+| 👤 **Ocenjevanje drugih**  | Ocenjevanje osebnosti drugih oseb preko vizualnih izborov           |
+| 🤝 **Primerjava**          | Kompatibilnost med dvema ocenjenima osebnostma                      |
+| 📜 **Zgodovina**           | Prikaz preteklih samoocenitev in ocen drugih oseb                   |
+
+---
