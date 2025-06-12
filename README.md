@@ -113,4 +113,69 @@ Run tests with:
 
 # 🐾 Persona Animal Frontend
 
-x
+### ⚙️ Tehnologije
+- ⚛️ React (TypeScript)
+- 🔥 Firebase Authentication
+- 🎨 CSS/Tailwind za oblikovanje
+- 🍃 REST API integracija (do backend-a)
+- ⚡ Vite kot dev strežnik
+
+---
+
+### 🧩 Ključne funkcionalnosti
+
+| Funkcija                   | Opis                                                                 |
+|----------------------------|----------------------------------------------------------------------|
+| 🔐 **Prijava**             | Firebase Google login integracija                                     |
+| 🧠 **Samoocenitev**        | Uporabnik izbere živali, ki predstavljajo njega samega               |
+| 👤 **Ocenjevanje drugih**  | Ocenjevanje osebnosti drugih oseb preko vizualnih izborov           |
+| 🤝 **Primerjava**          | Kompatibilnost med dvema ocenjenima osebnostma                      |
+| 📜 **Zgodovina**           | Prikaz preteklih samoocenitev in ocen drugih oseb                   |
+
+---
+
+### 🚀 Zagon (lokalno)
+
+#### ✅ Zahteve
+- **Node.js** (priporočeno v18 ali novejše) — [prenos](https://nodejs.org/en/)  
+- **npm** (priložen Node.js)
+- Firebase projekt (za prijavo in avtentikacijo)
+
+---
+
+### 🛠 Setup
+
+1️⃣ **Kloniraj repozitorij:
+
+```bash
+git clone https://github.com/your-username/persona-animal-frontend.git
+cd persona-animal-frontend
+
+2️⃣ Namesti odvisnosti:
+
+npm install
+
+3️⃣ Nastavi Firebase konfiguracijo:
+
+Ustvari src/firebase.ts
+Vanj dodaj konfiguracijski objekt Firebase projekta:
+import { initializeApp } from "firebase/app";
+
+const firebaseConfig = {
+  apiKey: "tvoj-API-ključ",
+  authDomain: "tvoj-projekt.firebaseapp.com",
+  projectId: "tvoj-projekt",
+  storageBucket: "tvoj-projekt.appspot.com",
+  messagingSenderId: "tvoj-senderId",
+  appId: "tvoj-appId",
+};
+
+export const app = initializeApp(firebaseConfig);
+
+4️⃣ Zaženi razvojni strežnik:
+
+npm run dev
+
+5️⃣ Aplikacija bo privzeto dostopna na:
+
+➥ http://localhost:5173
